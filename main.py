@@ -5,7 +5,7 @@ import sys
 
 def run_tesseract(image_path, tessdata_dir, model_name='ft', output_base='output'):
     """
-    调用 Tesseract OCR 对图像进行识别
+    Call Tesseract OCR to recognize the image
     """
     command = [
         'tesseract',
@@ -15,69 +15,69 @@ def run_tesseract(image_path, tessdata_dir, model_name='ft', output_base='output
         '-l', model_name
     ]
 
-    print("运行命令：", ' '.join(command))
+    print("Run command:", ' '.join(command))
     subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     output_txt = output_base + '.txt'
     if not os.path.exists(output_txt):
-        raise FileNotFoundError(f"{output_txt} 文件未生成，识别失败。")
+        raise FileNotFoundError(f"{output_txt} file not generated, recognition failed.")
     
     with open(output_txt, 'r', encoding='utf-8') as f:
         recognized_text = f.read()
     
     return recognized_text
 
-def visualize_result(image_path, recognized_text, output_image_path='output_vis.png'):
+def visualize_result(image_path, recognized_text, output_image_path='output.png'):
     """
-    将识别结果绘制在图像下方新增区域，避免与原图像内容重叠
+    Draw the recognition result in the newly added area below the image to avoid overlapping with the original image content
     """
     image = cv2.imread(image_path)
     if image is None:
-        raise ValueError("无法读取图像：", image_path)
+        raise ValueError("Cannot read image:", image_path)
 
-    # 识别结果按行分割
+    # Split recognition result by line
     lines = recognized_text.strip().split('\n')
     num_lines = len(lines)
 
-    # 设置文字参数
+    # Set text parameters
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.7
     thickness = 2
-    color = (0, 0, 255)  # 红色
+    color = (0, 0, 255)  # Red
     line_height = 30
     margin = 10
 
-    # 计算新增区域高度
+    # Calculate the height of the new area
     extra_height = num_lines * line_height + 2 * margin
 
-    # 扩展图像高度
+    # Extend image height
     h, w = image.shape[:2]
     new_img = cv2.copyMakeBorder(
         image,
         0, extra_height,  # top, bottom
         0, 0,             # left, right
         cv2.BORDER_CONSTANT,
-        value=(255, 255, 255)  # 白色背景
+        value=(255, 255, 255)  # White background
     )
 
-    # 在新增区域绘制识别结果
+    # Draw recognition result in the new area
     y0 = h + margin
     for i, line in enumerate(lines):
         y = y0 + i * line_height
         cv2.putText(new_img, line, (10, y), font, font_scale, color, thickness, lineType=cv2.LINE_AA)
 
     cv2.imwrite(output_image_path, new_img)
-    print(f"已保存可视化图像：{output_image_path}")
+    print(f"Visualization image saved: {output_image_path}")
 
-# 通过命令行参数指定 image_path
+# Specify image_path via command line argument
 if len(sys.argv) < 2:
-    print("用法: python main.py <image_path>")
+    print("Usage: python main.py <image_path>")
     sys.exit(1)
 
 image_path = sys.argv[1]
 tessdata_dir = r'D:\Tesseract-OCR\tessdata'
 output_base = 'output'
 
-# 执行流程
+# Run process
 recognized_text = run_tesseract(image_path, tessdata_dir, model_name='ft', output_base=output_base)
 visualize_result(image_path, recognized_text)

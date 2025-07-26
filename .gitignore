@@ -5,7 +5,7 @@ train_box
 train_gt/
 train_images/
 split_lines/
-lstmf_output/
+traineddata/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
